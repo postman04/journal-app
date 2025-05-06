@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Journal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<style>
+  .floating-icons {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+  }
+
+  .floating-icons img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+  }
+
+  .floating-icons img:hover {
+    transform: scale(1.1);
+  }
+</style>
+
+<body>
+  <header>
+
+    <div class="datetime" id="datetime">Loading date and time...</div>
+
+    <div class="logo">JournalApp</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="\index.html" onclick="logout()">Log Out</a>
+    </nav>
+  </header>
+
+  <main style="padding: 40px;">
+    <h2>Write Your Journal</h2>
+    <textarea placeholder="Start writing..." rows="20" style="width:100%; font-size:16px;"></textarea>
+    <br /><br />
+    <button onclick="saveNote()">Save Note</button>
+    <div id="savedNotes" class="notes-grid" style="margin-top: 30px;"></div>
+
+
+  </main>
+  <script>
+    function logout() {
+      localStorage.clear(); // Or sessionStorage.clear(); if you're using that
+      window.location.href = "index.html"; // Redirect to home page after logout
+    }
+  </script>
+
+  <script>
+    function updateDateTime() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString(undefined, options);
+      const timeStr = now.toLocaleTimeString();
+      document.getElementById('datetime').textContent = `${dateStr} | ${timeStr}`;
+    }
+
+    updateDateTime();
+    setInterval(updateDateTime, 1000); 
+  </script>
+  <script>
+    function saveNote() {
+      const note = document.querySelector("textarea").value.trim();
+      if (!note) {
+        alert("Note is empty!");
+        return;
+      }
+
+      const now = new Date();
+      const timestamp = now.toLocaleString();
+      const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
+
+      savedNotes.push({ text: note, time: timestamp });
+      localStorage.setItem("notes", JSON.stringify(savedNotes));
+
+      alert("Note saved!");
+      displayNotes();
+      document.querySelector("textarea").value = ""; // Clear textarea
+    }
+
+    function displayNotes() {
+      const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
+      const container = document.getElementById("savedNotes");
+      container.innerHTML = "<h3>Saved Notes</h3>";
+
+      savedNotes.forEach((note, index) => {
+        const noteDiv = document.createElement("div");
+        noteDiv.className = "note-card";
+        noteDiv.innerHTML = `
+        <strong>${note.time}</strong><br>${note.text}
+        <br><br>
+        <button onclick="deleteNote(${index})" style="margin-top: 10px;">Delete</button>
+      `;
+        container.appendChild(noteDiv);
+      });
+    }
+    function deleteNote(index) {
+      const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
+      savedNotes.splice(index, 1); // Remove the note at given index
+      localStorage.setItem("notes", JSON.stringify(savedNotes));
+      displayNotes();
+    }
+
+
+  </script>
+
+</body>
+
+</html>
